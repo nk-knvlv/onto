@@ -1,7 +1,7 @@
-import re
 from dotenv import load_dotenv
 import os
 from nlp import NLP
+from ontology_monorepo.parser import Parser
 
 load_dotenv()
 
@@ -18,6 +18,11 @@ def get_answer(question):
 
 
 def can_answer(question) -> bool:
+    """
+
+    :param question:
+    :return: Можем
+    """
     with open('/ontology_monorepo/faq.ontol', 'r', encoding='utf-8') as f:
         text = f.read()
         if text:
@@ -25,41 +30,12 @@ def can_answer(question) -> bool:
     return False
 
 
-def parse_marked_text(text_path: str) -> dict:
-    with open(text_path, 'w') as mt:
-        text = mt.read()
-        pattern = r'<(.*?)>(.*?)(?=<|$)'
-        fragments = re.findall(pattern, text)
-
-        triples = []
-        current_subject = None
-
-        for tags, content in fragments:
-            tags = [tag.strip() for tag in tags.split(',')]
-            content = content.strip()
-
-            if any('_s_' in tag for tag in tags):
-                current_subject = content
-            elif any('_r' in tag for tag in tags):
-                predicate = content
-            elif any('_f_' in tag for tag in tags):
-                obj = content
-                if current_subject and predicate:
-                    triples.append({
-                        "subject": current_subject,
-                        "predicate": predicate,
-                        "object": obj
-                    })
-
-        return {"triples": triples}
-
-
 def run():
-    nlp = NLP()
-    # parser = Parser()
+    nlp = NLP()  # нормализует текст
+    parser = Parser()  # переводит текст в триплеты
     ontology_path = os.getenv('ONTOL_PATH')
     # тут должны быть записаны правила, в виде пригодном для сравнения
-    # triples = parse_marked_text(ontology_path)
+    ontology = parser.parse_marked_text(ontology_path)
 
     while True:
         # получаем вопрос
