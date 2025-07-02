@@ -1,7 +1,13 @@
 import re
+from model.triplet import Triplet, Entity
+from nlp import NLP
 
 
 class Parser:
+    nlp: NLP
+
+    def __init__(self):
+        self.nlp = NLP()  # нормализует текст
 
     @staticmethod
     def parse_marked_text(text_path: str) -> dict:
@@ -10,7 +16,7 @@ class Parser:
             pattern = r'<(.*?)>(.*?)(?=<|$)'
             fragments = re.findall(pattern, text)
 
-            triples = []
+            triplets = []
             current_subject = None
 
             for tags, content in fragments:
@@ -18,16 +24,22 @@ class Parser:
                 content = content.strip()
 
                 if any('_s_' in tag for tag in tags):
-                    current_subject = content
+                    subject = Entity(text=content)
                 elif any('_r' in tag for tag in tags):
-                    predicate = content
+                    relation = Entity(text=content)
                 elif any('_f_' in tag for tag in tags):
-                    obj = content
-                    if current_subject and predicate:
-                        triples.append({
-                            "subject": current_subject,
-                            "predicate": predicate,
-                            "object": obj
-                        })
+                    obj = Entity(text=content)
+                    if current_subject and relation:
+                        triplet = Triplet(
+                            subject=subject,
+                            relation=relation,
+                            object=obj
+                        )
 
-            return {"triples": triples}
+                        triplets.append(triplet)
+
+            return {"triples": triplets}
+
+    def parse_question(self, question) -> Triplet:
+        tokens, lemmas = self.nlp.get_text_lemmas(question)
+        return Triplet()

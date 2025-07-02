@@ -1,49 +1,26 @@
 from dotenv import load_dotenv
 import os
-from nlp import NLP
 from ontology_monorepo.parser import Parser
+from ontology_monorepo.search_engine import SearchEngine
 
 load_dotenv()
 
 
-def get_answer(question):
-    answer = 'Нет информации по запросу'
-    if can_answer(question):
-        with open('/ontology_monorepo/faq.ontol', 'r', encoding='utf-8') as f:
-            text = f.read()
-            entities = text.split(',')
-            if question in entities:
-                answer = 'Утверждение верно'
-    return answer
-
-
-def can_answer(question) -> bool:
-    """
-
-    :param question:
-    :return: Можем
-    """
-    with open('/ontology_monorepo/faq.ontol', 'r', encoding='utf-8') as f:
-        text = f.read()
-        if text:
-            return True
-    return False
-
-
 def run():
-    nlp = NLP()  # нормализует текст
     parser = Parser()  # переводит текст в триплеты
     ontology_path = os.getenv('ONTOL_PATH')
+    es_host = os.getenv('ES_HOST')
     # тут должны быть записаны правила, в виде пригодном для сравнения
     ontology = parser.parse_marked_text(ontology_path)
+    es_engine = SearchEngine(es_host=es_host, ontology=ontology)
 
     while True:
         # получаем вопрос
         question = input("введите вопрос: ")
-        tokens, lemmas = nlp.get_text_lemmas(question)
+        q_triplets = parser.parse_question(question)
         # формируем ответ
-        # print(get_answer(question))
-        print(tokens, lemmas)
+        answer = es_engine.get_answer(q_triplets)
+        print(answer)
 
 
 if __name__ == '__main__':
