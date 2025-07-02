@@ -6,21 +6,27 @@ from nlp import NLP
 load_dotenv()
 
 
-
 def get_answer(question):
     answer = 'Нет информации по запросу'
     if can_answer(question):
-        answer = 'Утверждение верно'
+        with open('/ontology_monorepo/faq.ontol', 'r', encoding='utf-8') as f:
+            text = f.read()
+            entities = text.split(',')
+            if question in entities:
+                answer = 'Утверждение верно'
     return answer
 
 
-def can_answer(question):
-    with open('user')
-    pass
+def can_answer(question) -> bool:
+    with open('/ontology_monorepo/faq.ontol', 'r', encoding='utf-8') as f:
+        text = f.read()
+        if text:
+            return True
+    return False
 
 
-def parse_marked_text(marked_text):
-    with open(marked_text, 'w') as mt:
+def parse_marked_text(text_path: str) -> dict:
+    with open(text_path, 'w') as mt:
         text = mt.read()
         pattern = r'<(.*?)>(.*?)(?=<|$)'
         fragments = re.findall(pattern, text)
@@ -49,17 +55,19 @@ def parse_marked_text(marked_text):
 
 
 def run():
-    # парсим триплеты
     nlp = NLP()
+    # parser = Parser()
+    ontology_path = os.getenv('ONTOL_PATH')
     # тут должны быть записаны правила, в виде пригодном для сравнения
-    triples = parse_marked_text('user_query.ontol')
+    # triples = parse_marked_text(ontology_path)
 
     while True:
         # получаем вопрос
         question = input("введите вопрос: ")
         tokens, lemmas = nlp.get_text_lemmas(question)
         # формируем ответ
-        return get_answer(question)
+        # print(get_answer(question))
+        print(tokens, lemmas)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
 ../.idea
 .venv
-user_query.ontol
+faq.ontol
+.env
+__pycache__
