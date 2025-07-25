@@ -1,6 +1,7 @@
 import re
 from model.triplet import Triplet, Entity
 from nlp import NLP
+from os import path
 
 
 class Parser:
@@ -11,7 +12,12 @@ class Parser:
 
     @staticmethod
     def parse_marked_text(text_path: str) -> dict:
-        with open(text_path, 'w') as mt:
+        with open(text_path, 'r', encoding='utf-8') as mt:
+            exist = path.exists(text_path)
+            size = path.getsize(text_path)
+            print(exist)
+            print(size)
+
             text = mt.read()
             pattern = r'<(.*?)>(.*?)(?=<|$)'
             fragments = re.findall(pattern, text)
@@ -42,4 +48,5 @@ class Parser:
 
     def parse_question(self, question) -> Triplet:
         tokens, lemmas = self.nlp.get_text_lemmas(question)
-        return Triplet()
+        # return Triplet()
+        return tokens, lemmas
